@@ -1,0 +1,218 @@
+SQL Code 
+
+
+--1 List all properties located in the city of Manchester with a list price of over £200,000.
+select * from Property
+where askingprice > 200000 AND addresscity like 'Manchester';
+ 
+--2 List all viewings that took place in August or September 2020 and the clients who requested the viewings
+select viewingdate, viewingtime, viewingid, clientid from Viewing
+where viewingdate LIKE '2020-08%' OR viewingdate LIKE '2020-09%';
+ 
+/* 3 For each owner, list their total portfolio value (i.e. the total of all their properties’ prices)
+but only for properties which are houses. (
+*/
+select vendorid, SUM(askingprice) "Total Portfolio Value" FROM PROPERTY
+where propertytype like 'House'
+group by vendorid;
+ 
+/* 4 - For each property, list the smallest offer made by clients and which client made the 
+offer, but only for properties which have not been sold */
+SELECT propertyid, offeramount, clientid, soldstatus
+FROM Property INNER JOIN Offer
+USING propertyid;
+ 
+ 
+select * from offer;
+ 
+/* 
+Created by Phil ODonnell for Portfolio 1 Bootcamp 2021
+*/
+ 
+ 
+PRAGMA foreign_keys = OFF;
+ 
+DROP TABLE IF EXISTS Offer;
+DROP TABLE IF EXISTS Viewing;
+DROP TABLE IF EXISTS Staff;
+DROP TABLE IF EXISTS Client;
+DROP TABLE IF EXISTS Property;
+DROP TABLE IF EXISTS EstateAgency;
+DROP TABLE IF EXISTS Vendor;
+ 
+PRAGMA foreign_keys = ON;
+ 
+-- CREATE tables
+ 
+create TABLE Vendor(
+  vendorid INTeger PRIMARY KEY AUTOINCREMENT
+  , Title VARCHAR(5)
+  , FirstName VARCHAR(100) not NULL
+  , LastName VARCHAR(100) not NULL
+  , AddressHouseNo VARCHAR(7) not NULL
+  , AddressStreet VARCHAR(255)
+  , AddressTown VARCHAR(255)
+  , AddressCity VARCHAR(255)
+  , AddressPostCode VARCHAR(10) not NULL
+  , TelNo VARCHAR(15) not NULL
+  , Email VARCHAR(100) not NULL
+  , Notes VARCHAR(255)
+);
+ 
+CREATE TABLE EstateAgency(
+  agencyid INTEGER PRIMARY KEY AUTOINCREMENT
+  , CompanyName VARCHAR(10) not NULL
+  , AddressHouseNo VARCHAR(7) not NULL
+  , AddressStreet VARCHAR(255)
+  , AddressTown VARCHAR(255)
+  , AddressCity VARCHAR(255)
+  , AddressPostCode VARCHAR(10) not NULL
+  , TelNo VARCHAR(15) not NULL
+  , Email VARCHAR(100) not NULL
+  , Notes VARCHAR(255)
+  );
+ 
+CREATE TABLE Property(
+  PropertyID INTEGER PRIMARY KEY AUTOINCREMENT
+  , AskingPrice DECIMAL(7, 2) not NULL
+  , AddressHouseNo VARCHAR(7) not NULL
+  , AddressStreet VARCHAR(255)
+  , AddressTown VARCHAR(255)
+  , AddressCity VARCHAR(255)
+  , AddressPostCode VARCHAR(10) not NULL
+  , TelNo VARCHAR(15)
+  , PropertyType VARCHAR(20)
+  , SoldStatus VARCHAR(20)
+  , Description VARCHAR(255)
+  , NumberOfBedrooms INT(3) not NULL
+  , NumberOfGarages INT(2)
+  , GardenType VARCHAR(20)
+  , PropertySize INT(10)
+  , vendorid INTEGER
+  , agencyid INTEGER
+  , FOREIGN KEY(vendorid) REFERENCES Vendor(vendorid)
+  , FOREIGN key(agencyid) REFERENCES EstateAgency(agencyid)                       
+);
+ 
+create table Client(
+  ClientID intEGER primary KEY AUTOINCREMENT
+  , Title VARCHAR(5)
+  , FirstName VARCHAR(100) not NULL
+  , LastName VARCHAR(100) not NULL
+  , AddressHouseNo VARCHAR(7) not NULL
+  , AddressStreet VARCHAR(255)
+  , AddressTown VARCHAR(255)
+  , AddressCity VARCHAR(255)
+  , AddressPostCode VARCHAR(10) not NULL
+  , TelNo VARCHAR(15) not NULL
+  , Email VARCHAR(100) not NULL
+  , Budget DECIMAL(7, 2)
+  , Salary DECIMAL (7, 2)
+  , CreditRating DECIMAL(4, 2)
+  , ChainStatus VARCHAR(255)
+  , Notes VARCHAR(255)
+);
+ 
+CREATE TABLE Staff(
+  StaffID INTEGER PRIMARY KEY AUTOINCREMENT
+  , Title VARCHAR(5)
+  , FirstName VARCHAR(100) not NULL
+  , LastName VARCHAR(100) not NULL
+  , TelNo VARCHAR(15) not NULL
+  , Email VARCHAR(100) not NULL
+  , Notes VARCHAR(255)
+  , ViewingsTotal INT(5)
+  , SalesMade INT(5)
+  , ConversionPercentage DECIMAL(5, 2)
+);
+ 
+CREATE TABLE Viewing(
+  ViewingID INTEGER PRIMARY KEY AUTOINCREMENT
+  , ViewingDate date NOT NULL
+  , ViewingTime TIME(5)
+  , StaffID INT(8)
+  , PropertyID INT(8)
+  , ClientID int(8)
+  , FOREIGN KEY(StaffID) REFERENCES Staff(StaffID)
+  , FOREIGN KEY(PropertyID) REFERENCES Property(PropertyID)
+  , FOREIGN KEY(ClientID) REFERENCES Client(ClientID)
+); 
+ 
+CREATE TABLE Offer(
+  OfferID INTEGER PRIMARY KEY AUTOINCREMENT
+  , OfferDate DATE NOT NULL
+  , OfferAmount DECIMAL(7, 2) NOT NULL
+  , OfferAccepted VARCHAR(100) NOT NULL
+  , PropertyID INT(8)
+  , ClientID int(8)
+  , FOREIGN KEY(PropertyID) REFERENCES Property(PropertyID)
+  , FOREIGN KEY(ClientID) REFERENCES Client(ClientID)
+);
+ 
+-- INSERT DATA INTO VENDOR TABLE
+insert into Vendor (title, firstname, lastname, addresshouseno, addressstreet, addresstown, addresscity
+                    , addresspostcode, telno, email, notes)
+VALUES ('MR', 'Michael', 'Johnson', '26', 'Pitville Avenue', 'Birkenhead', 'Liverpool', 'L187JE', '07549175633', 
+  'johnsonmichael291@gmail.com', 'Multi-Millionaire'),
+('MR', 'David', 'Smith', '52', 'Smith St', 'Ealing', 'London', 'W6 1AG', '07546454646', 'p@sgdfgdfg.com', 'fjgghjjftjy'),
+('MRS', 'Fiona', 'Lloyd', '52', 'Red St', 'Bury', 'Lancs', 'B6 1AG', '01456789555', 'F@sgdfgdfg.com', 'Nice lady'),
+('MISS', 'Sarah', 'Butt', '25', 'Blue St', 'Hancoates', 'Lancs', 'BL6 1AG', '01203456789', 's@sgdfgdfg.com', 'Young Vendor');
+select * from Vendor
+-- INSERT DATA INTO EstateAgency TABLE
+insert into EstateAgency (companyname, addresshouseno, addressstreet, addresstown, addresscity, addresspostcode
+                          , telno, email, notes)
+VALUES ('Hunters', '1', 'Green Lane', 'Astley', 'Lancs', 'M22 5HH', '01706654321', 'hunters@hunters.co.uk', 'specialise in selling luxury houses'),
+('SellQuick', '1', 'Purple Lane', 'Aston', 'Birmingham', 'B22 5HH', '0121654321', 'sq@sq.co.uk', 'specialise in quick sales'),
+('Andrew Kelly', '12', 'Yorkshire St', 'Rochdale', 'Lancs', 'OL22 5HH', '01706754321', 'ak@ak.co.uk', 'specialise in selling luxury houses'),
+('Crossleys', '14', 'Cheddar Lane', 'Taunton', 'Somerset', 'T22 5HH', '01457654321', 'crossleys@crossleys.co.uk'
+, 'specialise in selling luxury houses');
+ 
+ 
+-- INSERT DATA INTO Property TABLE
+ 
+INSERT INTO Property (AskingPrice, AddressHouseNo, addressstreet, addresstown, addresscity, addresspostcode
+                      , telno, propertytype, soldstatus, description, numberofbedrooms, numberofgarages
+                      , gardentype, propertysize, vendorid, agencyid)
+VALUES (325000, '27', 'Abbeycroft Close', 'Astley', 'Manchester', 'M44 5HH', '01612524789', 'House', 'Available'
+        , 'Beautiful Townhouse in private gated community, small garden', 3, 0, 'small', 200, 1, 1),
+        (315000, '36', 'Robuck Rd', 'Worsley', 'Manchester', 'M39 5HH', '01612589789', 'House', 'Available'
+        , 'Beautiful house with huge garden', 4, 1, 'large', 300, 2, 2),
+                (175000, '36', 'Acorn Rd', 'Romford', 'Essex', 'RM39 5HH', '01703589789', 'Apartment', 'Under Offer'
+        , 'Beautiful Aparyment with no garden', 4, 0, 'none', 100, 3, 3),
+                (215000, '11', 'Woodlands Rd', 'Milnrow', 'Manchester', 'OL39 5HH', '01706889789', 'House', 'Sold'
+        , 'Beautiful Bungalow with huge garden', 3, 1, 'large', 250, 4, 4);
+ 
+-- INSERT DATA INTO Client TABLE
+INSERT INTO Client (title, firstname, lastname, addresshouseno, addressstreet, addresstown, addresscity
+                    , addresspostcode, telno, email, budget, salary, creditrating, chainstatus, notes)
+values ('Mr', 'Phil', 'ODonnell', '3', 'Stiups Lane', 'Rochdale', 'Lancs', 'OL16 3DR', '01706654321', 'podonnell@aol.com', 325000, 40000
+        , 325.75, 'chainfree', 'Motivated Buyer'),
+        ('Mr', 'Paul', 'Smnith', '3', 'Upson Lane', 'Wigan', 'Lancs', 'WL16 3DR', '01806654321', 'psmityh@aol.com', 225000, 20000
+        , 525.75, 'chain', 'First time Buyer'),
+        ('Mrs', 'Susan', 'Jones', '8', 'jepson Close', 'Warwick', 'Birmingham', 'B6 3DR', '0121654321', 'sjones@aol.com', 25000, 26000
+        , 438.24, 'chainfree', 'Investor'),
+        ('Miss', 'Sarah', 'Love', '13', 'Brenton Parade', 'Goole', 'Somerset', 'GL16 3DR', '09706654321', 'sl@aol.com', 500000, 100000
+        , 625.75, 'chainfree', 'Investor');
+select * from client;     
+        
+-- INSERT DATA INTO Staff TABLE
+INSERT INTO Staff (title, firstname, lastname, telno, email, notes, viewingstotal, salesmade, conversionpercentage)
+VALUES ('Miss', 'Kiera', 'Knightly', '07945666555', 'kj@ak.com', 'strong seller', 52, 26, 50),
+('Miss', 'Siobhan', 'Brooke', '07945566555', 'sb@huntelys.com', 'Professional', 32, 16, 50),
+    ('Mr', 'Max', 'Shearer', '07942226555', 'ms@oakleys.com', 'new', 4, 0, 0),
+    ('Mrs', 'Mariann', 'Martinez', '07947866555', 'mm@quicksell.com', 'strong seller', 62, 31, 50);
+      
+-- INSERT DATA INTO Viewing TABLE
+INSERT INTO Viewing (viewingdate, viewingtime, staffid, propertyid, clientid)
+VALUES ('2020-08-15', '15:00:00', 1, 1, 1),
+   ('2020-09-15', '15:00:00', 2, 2, 2),
+       ('2020-06-15', '15:00:00', 3, 3, 3),
+       ('2020-05-15', '15:00:00', 4, 4, 4);
+       
+-- INSERT DATA INTO Offer TABLE   
+INSERT INTO Offer (offerdate, offeramount, offeraccepted, propertyid, clientid)
+VALUES ('2020-08-16', 175000, 'No', 1, 1),
+   ('2020-09-16', 185000, 'No', 2, 2),
+       ('2020-07-16', 375000, 'Yes', 3, 3),
+       ('2020-05-16', 175000, 'No', 4, 4);
+
